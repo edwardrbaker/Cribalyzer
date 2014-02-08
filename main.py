@@ -16,7 +16,6 @@ def buildDeck():
 	return tempDeck
 
 def scoreHand(hand):
-
 	_handRanks = [x[:-1] for x in hand]
 	_handSuits = [x[-1:] for x in hand]
 
@@ -57,6 +56,9 @@ def scoreHand(hand):
 	# flush
 	if all(x == _handSuits[0] for x in _handSuits):
 		score = score + len(_handSuits)
+	elif all(x == _handSuits[0] for x in _handSuits[0:4]):
+		score = score + len(_handSuits[0:4])
+
 
 	# Nob can be calculated here, but I'm not really sure we need that .. yet?
 
@@ -94,10 +96,6 @@ def scoreHand(hand):
 
 		start = start - 1
 
-
-	#print("SubTotal Score: " + str(score))
-	#print("-------------")
-
 	return score
 
 def flipProbability(remainingDeck):
@@ -116,20 +114,17 @@ def flipScoring(hand, remainingDeck):
 		handScore = scoreHand(handLocal)
 		flipScoreList.append(handScore)
 
-		# flipCardScore = [{0:[], 1:[], }]
-		#flipCardScoreDict[handScore].append(card)
-		
-		# print( "Hand of " + str(handLocal) + " scores " + str(handScore) )
+		if handScore not in flipCardScoreDict:
+			flipCardScoreDict[handScore] = [card]
+		else:
+			flipCardScoreDict[handScore].append(card)
 
-
-	#print(flipCardScoreDict)
 	# key = score, value = probability
 	duplicates = {x:y for x, y in collections.Counter(flipScoreList).items() if y > 1}
 	x = list(reversed(sorted(duplicates.items(), key=operator.itemgetter(1))))
 
-	for k,v in x:
-		pcnt = float( (v / 46) * 100 )
-		print("You have a ", pcnt,"% chance of scoring "+str(k))
+	return x,flipCardScoreDict
+
 
 def expectedScore(hand, remainingDeck):
 	pass
@@ -176,7 +171,12 @@ def main():
 				#print( "Score: " + str(handObject.score) )
 				print( "Flip Statistics: " )
 
-				flipScoring(handObject.cards, remainingDeck)
+				x,y = flipScoring(handObject.cards, remainingDeck)
+
+				for k,v in x:
+					if k != handObject.score:
+						pcnt = float( (v / 46) * 100 )
+						print("You have a ", pcnt,"% chance of scoring "+str(k), "(",y[k],")")
 
 				print("\n\n")
 
