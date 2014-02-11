@@ -73,7 +73,6 @@ def scoreHand(hand):
 			runCombinations.extend(els)
 
 		for hand in runCombinations:
-
 			localRun = 1
 			member = 0
 			while member < len(hand) - 1:
@@ -98,11 +97,6 @@ def scoreHand(hand):
 
 	return score
 
-def flipProbability(remainingDeck):
-	remainingCards = len(remainingDeck)
-	for card in remainingDeck:
-		print("Probability of flipping: "+card+": "+str(1/46))
-
 def flipScoring(hand, remainingDeck):
 	flipScoreList = []
 	flipCardScoreDict = {}
@@ -115,9 +109,9 @@ def flipScoring(hand, remainingDeck):
 		flipScoreList.append(handScore)
 
 		if handScore not in flipCardScoreDict:
-			flipCardScoreDict[handScore] = [card]
+			flipCardScoreDict[handScore] = [card[:-1]]
 		else:
-			flipCardScoreDict[handScore].append(card)
+			flipCardScoreDict[handScore].append(card[:-1])
 
 	# key = score, value = probability
 	duplicates = {x:y for x, y in collections.Counter(flipScoreList).items() if y > 1}
@@ -126,12 +120,48 @@ def flipScoring(hand, remainingDeck):
 	return x,flipCardScoreDict
 
 
-def expectedScore(hand, remainingDeck):
+def expectedScore(remainingDeck, flipCardScoreDict):
+	_EVhandRanks = [x[:-1] for x in remainingDeck]
+	rmEVDuplicates = {x:y for x, y in collections.Counter(_EVhandRanks).items() if y > 1}
+	print(rmEVDuplicates)
+
+	evRunningTotal = 0
+
+	for card in rmEVDuplicates:
+		numerator = rmEVDuplicates[card]
+		prob = numerator / 46
+
+		# get point value of this card
+		for score in flipCardScoreDict:
+			if card in flipCardScoreDict[score]:
+				evRunningTotal = evRunningTotal + (prob * score)
+
+	print(evRunningTotal)
+
 	pass
 
 class Hand():
 	score = 0
 	cards = []
+
+def discardMethod(discardHand):
+	_handRanks = [x[:-1] for x in discardHand]
+	_handSuits = [x[-1:] for x in discardHand]
+
+	discardHandP = 0
+
+	if _handRanks[0] == _handRanks[1]:
+		discardHandP = discardHandP + .20
+		print("Cards are suited.")
+	else:
+		discardHandP = discardHandP + 2
+
+	if _handRanks[0] + _handRanks[1] == 15:
+		discardHandP = discardHandP + 2
+
+	# ordinality
+	
+	return discardHandP
 
 def main():
 	_CARDS_AFTER_DEAL = 46
@@ -144,7 +174,7 @@ def main():
 		if len(deal) < 6 or len(deal) > 6:
 			print("Stop screwing around. 6 cards.")
 		else:
-			## todo: validity of entered deadl (ie; can't have 5 4s or whatever)
+			## todo: validity of entered deal (ie; can't have 5 4s or whatever)
 			# setup the deck, find out what is left.
 			deck = buildDeck()
 			remainingDeck = [c for c in deck if c not in deal]
@@ -174,19 +204,19 @@ def main():
 				x,y = flipScoring(handObject.cards, remainingDeck)
 
 				for k,v in x:
-					if k != handObject.score:
-						pcnt = float( (v / 46) * 100 )
-						print("You have a ", pcnt,"% chance of scoring "+str(k), "(",y[k],")")
+					#if k != handObject.score:
+					pcnt = float( (v / 46) * 100 )
+					print("You have a ", pcnt,"% chance of scoring "+str(k), "(",y[k],")")
+
+				print("\nDiscard Statistics: ")
+				discardMethod(handObject.discard)
+
+				print("Expected Score:")
+				expectedScore(remainingDeck, y)
 
 				print("\n\n")
-
-			print( handObject )
 			
 			# discard which two cards (maximum points-in-hand)
 
 if __name__ == '__main__':
     main()
-
-## references
-# https://github.com/maowen/cribbage
-# http://www.codeproject.com/Articles/15468/Cribbage-Hand-Counting-Library
