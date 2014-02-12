@@ -73,6 +73,7 @@ def scoreHand(hand):
 			runCombinations.extend(els)
 
 		for hand in runCombinations:
+			hand = sorted(hand, key=lambda x: RANKS.index(x))
 			localRun = 1
 			member = 0
 			while member < len(hand) - 1:
