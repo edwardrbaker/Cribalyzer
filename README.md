@@ -27,5 +27,7 @@ Goal:
 A few websites I've used to help guide the project, some items were shamelessly reused :)
 
 https://github.com/maowen/cribbage
+
 http://www.codeproject.com/Articles/15468/Cribbage-Hand-Counting-Library
+
 http://www.math.cornell.edu/~mec/2006-2007/Probability/Cribbagesol.htm
